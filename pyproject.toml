@@ -1,0 +1,15 @@
+[tool.isort]
+line_length = 100
+force_single_line = true
+group_by_package = true
+src_paths = ["app"]
+profile = "black"
+
+[tool.black]
+line-length = 100
+
+[tool.autoflake]
+remove-all-unused-imports = true
+recursive = true
+in_place = true
+exclude = "*venv/*,*.git/*"
