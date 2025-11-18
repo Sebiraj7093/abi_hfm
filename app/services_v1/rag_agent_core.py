@@ -3,11 +3,20 @@ Fixed Deep Agents RAG System - Properly Working Search
 """
 
 import os
+import sys
 import asyncio
 import pandas as pd
 import json
 from typing import List, Dict, Any
 from dotenv import load_dotenv
+
+# Add project root to path for imports
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+from app.services_v1.constants import DEEP_AGENT_PROMPT
+from app.services_v1.sql_agent_core import sql_agent
 
 # Load environment variables
 load_dotenv()
@@ -18,6 +27,7 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGener
 from langchain_core.tools import BaseTool
 from deepagents import create_deep_agent
 from langchain.agents import create_agent
+from deepagents import CompiledSubAgent
 
 class PGVectorStore:
     """pgvector implementation with working search"""
@@ -258,8 +268,9 @@ class CSVLoaderTool(BaseTool):
     
     async def _arun(self, csv_filename: str) -> str:
         try:
-            # Build full path
-            csv_path = os.path.join("/home/avivekanandan/SQL_Agent", csv_filename)
+            # Build full path - use project root directory
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            csv_path = os.path.join(project_root, csv_filename)
             
             if not os.path.exists(csv_path):
                 return f"❌ File not found: {csv_path}"
@@ -448,8 +459,11 @@ async def load_csv_files(rag):
     
     csv_loader = CSVLoaderTool(rag.vector_store)
     
+    # Get project root directory
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    
     for csv_file in csv_files:
-        csv_path = f"/home/avivekanandan/SQL_Agent/{csv_file}"
+        csv_path = os.path.join(project_root, csv_file)
         if os.path.exists(csv_path):
             await csv_loader._arun(csv_file)
         # Silent loading
@@ -482,5 +496,50 @@ async def load_csv_files(rag):
     
 #     print("\n👋 Goodbye!")
 
-# if __name__ == "__main__":
-#     asyncio.run(interactive_session())
+
+
+if __name__ == "__main__":
+    async def main():
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            raise RuntimeError("GOOGLE_API_KEY not set")
+        
+        llm = ChatGoogleGenerativeAI(
+            model="gemini-2.0-flash",
+            temperature=0,
+            google_api_key=api_key,
+            max_output_tokens=2000
+        )
+        
+        # Initialize RAG agent
+        rag = RAGAgent()
+        await rag.initialize()
+        
+        # Load CSV files
+        #await load_csv_files(rag)
+        
+        # Create sub-agent
+        rag_subagent = CompiledSubAgent(
+            name="RAG_Agent",
+            description="RAG Agent for Q&A for any query related to hfm or trading from the user",
+            runnable=rag.agent
+        )
+        sql_subagent = CompiledSubAgent(
+            name="SQL_Agent",
+            description="SQL Agent for any query related to user's trading data and metrics",
+            runnable=sql_agent
+        )
+        # Create deep agent
+        agent = create_deep_agent(
+            model=llm,
+            subagents=[rag_subagent, sql_subagent],    
+            system_prompt=DEEP_AGENT_PROMPT
+        )
+        response = await agent.ainvoke({
+        "messages": [{"role": "user", "content": 'what is a zero spread account?'}]
+                })
+        print(response)
+    
+    # Run the async main function
+    asyncio.run(main())
+    

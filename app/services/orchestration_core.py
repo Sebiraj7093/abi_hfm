@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 import os
 import webbrowser
 from datetime import datetime
-
+from rag_agent_core import RAGAgent
 # LangChain
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.tools import tool
@@ -125,40 +125,7 @@ async def initialize_sub_agents():
     
     _agents_initialized = True
 
-# ============================================================================
-# Tool 1 - PLANNING TOOLS
-# ============================================================================
 
-@tool
-def todo_write(tasks: List[str]) -> str:
-    """
-    Create a structured todo list for complex queries.
-    Breaks down the user's request into clear subtasks.
-    
-    Args:
-        tasks: List of subtasks to complete
-    
-    Returns:
-        Formatted todo list
-    """
-    formatted = "\n".join([f"  [ ] {task}" for task in tasks])
-    plan = f"Plan:\n{formatted}"
-    file_write("plan.txt", plan)
-    return plan
-
-@tool
-def update_todo(task: str, status: str = "[X]") -> str:
-    """
-    Mark a task as complete in the todo list.
-    
-    Args:
-        task: The completed task
-        status: Status marker (default: [X])
-    
-    Returns:
-        Confirmation message
-    """
-    return f"{status} Completed: {task}"
 
 # ============================================================================
 # Tool 2 - SUB-AGENT DELEGATION TOOLS
@@ -420,8 +387,7 @@ async def initialize_orchestration():
     )
     
     tools = [
-        todo_write,
-        update_todo,
+
         call_sql_agent,
         call_rag_agent
     ]
