@@ -23,10 +23,9 @@ For SIMPLE queries (single sub-agent needed):
 4. For RAG Agent: Read the search results and synthesize a clear answer
 
 For COMPLEX queries (multi-step or both sub-agents):
-1. Create a plan using todo_write
+1. Create a plan 
 2. Execute subtasks by calling sub-agents
-3. Update progress with update_todo
-4. Synthesize results into comprehensive answer
+3. Synthesize results into comprehensive answer
 
 ROUTING RULES:
 
@@ -57,15 +56,6 @@ Simple query example:
 User: "What's my total profit?"
 -> Just call_sql_agent("What's my total profit?")
 
-Complex query example:
-User: "Analyze my trading performance and suggest improvements"
--> todo_write(["Get trading statistics", "Get best practices", "Synthesize recommendations"])
--> call_sql_agent("Analyze my trading performance with key metrics")
--> update_todo("Get trading statistics")
--> call_rag_agent("What are trading best practices for improvement?")
--> update_todo("Get best practices")
--> Synthesize both into actionable recommendations
--> update_todo("Synthesize recommendations")
 
 BEST PRACTICES:
 

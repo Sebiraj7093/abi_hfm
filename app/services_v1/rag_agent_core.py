@@ -10,6 +10,12 @@ import json
 from typing import List, Dict, Any
 from dotenv import load_dotenv
 
+# Load environment variables FIRST
+load_dotenv()
+
+
+
+
 # Add project root to path for imports
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if project_root not in sys.path:
@@ -18,9 +24,6 @@ if project_root not in sys.path:
 from app.services_v1.constants import DEEP_AGENT_PROMPT
 from app.services_v1.sql_agent_core import sql_agent
 
-# Load environment variables
-load_dotenv()
-
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
@@ -28,7 +31,6 @@ from langchain_core.tools import BaseTool
 from deepagents import create_deep_agent
 from langchain.agents import create_agent
 from deepagents import CompiledSubAgent
-
 class PGVectorStore:
     """pgvector implementation with working search"""
     
@@ -426,23 +428,7 @@ CRITICAL RULES:
 )      
         return self.agent
         
-    #     pass  # Silent initialization
-    
-    # async def query(self, question: str) -> str:
-    #     """Query the agent"""
-    #     if not self.agent:
-    #         raise ValueError("Agent not initialized")
-        
-    #     response = await self.agent.ainvoke({
-    #         "messages": [{"role": "user", "content": question}]
-    #     })
-        
-    #     messages = response.get("messages", [])
-    #     for message in reversed(messages):
-    #         if hasattr(message, 'content') and message.content:
-    #             return message.content
-        
-    #     return "No response generated."
+
 
 async def load_csv_files(rag):
     """Load CSV files if not already loaded"""
@@ -466,35 +452,6 @@ async def load_csv_files(rag):
         csv_path = os.path.join(project_root, csv_file)
         if os.path.exists(csv_path):
             await csv_loader._arun(csv_file)
-        # Silent loading
-
-# async def interactive_session():
-#     """Interactive Q&A session"""
-#     # Silent initialization
-#     rag = RAGAgent()
-#     await rag.initialize()
-#     await load_csv_files(rag)
-    
-#     while True:
-#         try:
-#             user_input = input("\n❓ Query: ").strip()
-            
-#             if user_input.lower() == 'exit':
-#                 break
-            
-#             if not user_input:
-#                 continue
-            
-#             pass  # Silent thinking
-#             answer = await rag.query(user_input)
-#             print(f"\n💡 AI: {answer}")
-            
-#         except KeyboardInterrupt:
-#             break
-#         except Exception as e:
-#             print(f"❌ Error: {e}")
-    
-#     print("\n👋 Goodbye!")
 
 
 
@@ -536,7 +493,7 @@ if __name__ == "__main__":
             system_prompt=DEEP_AGENT_PROMPT
         )
         response = await agent.ainvoke({
-        "messages": [{"role": "user", "content": 'what is a zero spread account?'}]
+        "messages": [{"role": "user", "content": 'what is my profit percentage ?'}]
                 })
         print(response)
     
