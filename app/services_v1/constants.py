@@ -50,11 +50,6 @@ Call BOTH when query needs data AND explanation:
 - "Show my profit and explain what affects it"
 - "Calculate my win rate and tell me if it's good"
 
-PLANNING GUIDELINES:
-
-Simple query example:
-User: "What's my total profit?"
--> Just call_sql_agent("What's my total profit?")
 
 
 BEST PRACTICES:

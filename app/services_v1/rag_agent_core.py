@@ -493,7 +493,7 @@ if __name__ == "__main__":
             system_prompt=DEEP_AGENT_PROMPT
         )
         response = await agent.ainvoke({
-        "messages": [{"role": "user", "content": 'what is my profit percentage ?'}]
+        "messages": [{"role": "user", "content": 'HI'}]
                 })
         print(response)
     
